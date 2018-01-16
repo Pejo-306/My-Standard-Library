@@ -1,25 +1,7 @@
-#include <iostream>
-
 using namespace std;
-
-int bsearch(int *arr, int size, int value);
-
-int main()
-{
-    int arr[10];
-    for (int i = 0; i < 10; ++i)
-        arr[i] = i + 1;
-
-    for (int i = 0; i < 10; ++i)
-        cout << bsearch(arr, 10, i + 1) << endl;
-    return 0;
-}
 
 int bsearch(int *arr, int size, int value)
 {
-    if (value > arr[size-1])  // value can't be in this array
-        return -1;
-
     int left = 0, right = size - 1, middle;
     while (left <= right) {
         middle = (left + right) / 2;
@@ -30,6 +12,6 @@ int bsearch(int *arr, int size, int value)
         else 
             right = middle - 1;
     }
-    return left;
+    return -1; // value not found
 }
 
