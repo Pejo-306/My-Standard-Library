@@ -1,4 +1,4 @@
-# My Standart Library
+# My Standard Library
 
 This repository contains an assortment of commonly used data structures,
 functions, etc. Everything in this repository is implemented by me, the
