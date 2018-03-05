@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #define REPLACES 4
 
 int strsub(char *str, char *search, char *replace)
