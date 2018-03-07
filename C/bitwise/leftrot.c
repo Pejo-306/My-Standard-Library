@@ -2,8 +2,8 @@
 
 #define UINT_BITS 32
 
-unsigned int leftrot(unsigned int x, int n)
+unsigned int leftrot(unsigned int num, int positions)
 {
-    return x << n | x >> (UINT_BITS - n);
+    return num << positions | num >> (UINT_BITS - positions);
 }
 
