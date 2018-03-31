@@ -2,60 +2,60 @@
 #include <stdlib.h>
 #include <limits.h>
 
-typedef struct node_t {
+typedef struct node_t * Node;
+
+struct node_t {
     int data;
     struct node_t *next;
-} Node;
+};
 
 typedef struct stack_t * Stack;
 
 struct stack_t {
     struct node_t *head;
 
-    void (*print)(const void *self);
-    int (*empty)(const void *self);
+    
     size_t (*size)(const void *self);
+    void (*print)(const void *self);
+    void (*destroy)(const void *self);
+    int (*empty)(const void *self);
+    int (*top)(const void *self);
     void (*push)(const void *self, int data);
     void (*pop)(const void *self);
-    int (*top)(const void *self);
 };
+
+Stack new_stack();
+size_t size(const void *);
+void print_stack(const void *);
+void destroy(const void *);
+int empty(const void *);
+int top(const void *);
+void push(const void *, int);
+void pop(const void *);
 
 Stack new_stack()
 {
     Stack self = (Stack)malloc(sizeof(struct stack_t));
     
     self->head = NULL;
-    self->print = &print_stack;
-    self->empty = &empty;
-    self->size = &size;
-    self->push = &push;
-    self->pop = &pop;
-    self->top = &top;
+
+    self->size = size;
+    self->print = print_stack;
+    self->destroy = destroy;
+    self->empty = empty;
+    self->top = top;
+    self->push = push;
+    self->pop = pop;
 
     return self;
 }
 
-void print_stack(const void *self)
-{ 
-    Node *current = ((Stack)self)->head;
-    while (current != NULL) {
-        printf("%d -> ", current->data);
-        current = current->next;
-    }
-    printf("NULL\n");
-}
-
-int empty(const void *self)
+size_t size(const void *this)
 {
-    if (((Stack)self)->head != NULL)
-        return 0;
-    return 1;
-}
-
-size_t size(const void *self)
-{
+    Stack self = (Stack)this;
+    Node current = self->head;
     size_t len = 0;
-    Node *current = ((Stack)self)->head;
+
     while (current != NULL) {
         len++;
         current = current->next;
@@ -63,32 +63,66 @@ size_t size(const void *self)
     return len;
 }
 
-void push(const void *self, int data)
-{
-    Stack stack = (Stack)self;
-    Node *new_head = (Node *)malloc(sizeof(Node));
-    new_head->data = data;
-    new_head->next = stack->head;
-    stack->head = new_head;
+void print_stack(const void *this)
+{ 
+    Stack self = (Stack)this;
+    Node current = self->head;
+
+    while (current != NULL) {
+        printf("%d -> ", current->data);
+        current = current->next;
+    }
+    printf("NULL\n");
 }
 
-void pop(const void *self)
+void destroy(const void *this)
 {
-    Stack stack = (Stack)self;
-    if (stack->empty(stack))
+    Stack self = (Stack)this;
+    Node previous = NULL;
+    Node current = self->head;
+
+    while (current != NULL) {
+        previous = current;
+        current = current->next;
+        free(previous);
+    }
+    free(self);
+}
+
+int empty(const void *this)
+{
+    Stack self = (Stack)this;
+
+    return (self->head == NULL) ? 1 : 0;
+}
+
+int top(const void *this)
+{
+    Stack self = (Stack)this;
+
+    return (self->empty(self)) ? INT_MIN : self->head->data;
+}
+
+void push(const void *this, int data)
+{
+    Stack self = (Stack)this;
+    Node new_head = (Node)malloc(sizeof(struct node_t));
+
+    new_head->data = data;
+    new_head->next = self->head;
+    self->head = new_head;
+}
+
+void pop(const void *this)
+{
+    Stack self = (Stack)this;
+    Node old_head;
+
+    if (self->empty(self))
         return;  // error
 
-    Node *old_head = stack->head;
-    stack->head = old_head->next;
+    old_head = self->head;
+    self->head = old_head->next;
     free(old_head);
-}
-
-int top(const void *self)
-{
-    Stack stack = (Stack)self;
-    if (stack->empty(stack))
-        return INT_MIN;
-
-    return stack->head->data;
 }
 

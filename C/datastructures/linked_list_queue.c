@@ -2,23 +2,35 @@
 #include <stdlib.h>
 #include <limits.h>
 
-typedef struct node_t {
+typedef struct node_t * Node;
+
+struct node_t {
     int data;
     struct node_t *next;
-} Node;
+};
 
 typedef struct queue_t * Queue;
 
 struct queue_t {
     struct node_t *head, *tail;
 
-    void (*print)(const void *self);
-    int (*empty)(const void *self);
     size_t (*size)(const void *self);
+    void (*print)(const void *self);
+    void (*destroy)(const void *self);
+    int (*empty)(const void *self);
+    int (*front)(const void *self);
     void (*push)(const void *self, int data);
     void (*pop)(const void *self);
-    int (*front)(const void *self);
 };
+
+Queue new_queue();
+size_t size(const void *);
+void print_queue(const void *);
+void destroy(const void *);
+int empty(const void *);
+int front(const void *);
+void push(const void *, int);
+void pop(const void *);
 
 Queue new_queue()
 {
@@ -26,37 +38,24 @@ Queue new_queue()
 
     self->head = NULL;
     self->tail = NULL;
-    self->print = &print_queue;
-    self->empty = &empty;
-    self->size = &size;
-    self->push = &push;
-    self->pop = &pop;
-    self->front = &front;
+
+    self->size = size;
+    self->print = print_queue;
+    self->destroy = destroy;
+    self->empty = empty;
+    self->front = front;
+    self->push = push;
+    self->pop = pop;
     
     return self; 
 }
 
-void print_queue(const void *self)
+size_t size(const void *this)
 {
-    Node *current = ((Queue)self)->head;
-    while (current != NULL) {
-        printf("%d -> ", current->data);
-        current = current->next;
-    }
-    printf("NULL\n");
-}
-
-int empty(const void *self)
-{
-    if (((Queue)self)->head != NULL)
-        return 0;
-    return 1;
-}
-
-size_t size(const void *self)
-{
+    Queue self = (Queue)this;
+    Node current = self->head;
     size_t len = 0;
-    Node *current = ((Queue)self)->head;
+
     while (current != NULL) {
         len++;
         current = current->next;
@@ -64,39 +63,72 @@ size_t size(const void *self)
     return len;
 }
 
-void push(const void *self, int data)
+void print_queue(const void *this)
 {
-    Node *new_element = (Node *)malloc(sizeof(Node));
+    Queue self = (Queue)this;
+    Node current = self->head;
+
+    while (current != NULL) {
+        printf("%d -> ", current->data);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
+void destroy(const void *this)
+{
+    Queue self = (Queue)this;
+    Node previous = NULL;
+    Node current = self->head;
+
+    while (current != NULL) {
+        previous = current;
+        current = current->next;
+        free(previous);
+    }
+    free(self);
+}
+
+int empty(const void *this)
+{
+    Queue self = (Queue)this;
+
+    return (self->head == NULL) ? 1 : 0;
+}
+
+int front(const void *this)
+{
+    Queue self = (Queue)this;
+
+    return (self->empty(self)) ? INT_MIN : self->head->data;
+}
+ 
+void push(const void *this, int data)
+{
+    Queue self = (Queue)this;
+    Node new_element = (Node)malloc(sizeof(struct node_t));
     new_element->data = data;
     new_element->next = NULL;
 
-    Queue queue = (Queue)self;
-    if (queue->empty(queue)) {
-        queue->head = new_element;
-        queue->tail = new_element;
+    if (self->empty(self)) {
+        self->head = new_element;
+        self->tail = new_element;
     } else {
-        queue->tail->next = new_element;
-        queue->tail = queue->tail->next;
+        self->tail->next = new_element;
+        self->tail = self->tail->next;
     }
 }
 
-void pop(const void *self)
+void pop(const void *this)
 {
-    Queue queue = (Queue)self;
-    if (queue->empty(queue))
+    Queue self = (Queue)this;
+    Node old_head;
+
+    if (self->empty(self))
         return;  // error
 
-    Node *old_head = queue->head;
-    queue->head = old_head->next;
+    old_head = self->head;
+    self->head = old_head->next;
     free(old_head);
 }
 
-int front(const void *self)
-{
-    Queue queue = (Queue)self;
-    if (queue->empty(queue))
-        return INT_MIN;
-
-    return queue->head->data;
-}
- 
