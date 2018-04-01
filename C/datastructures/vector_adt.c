@@ -7,8 +7,8 @@
 typedef struct vector_t * Vector;
 
 struct vector_t {
-    int size;
-    int count;
+    size_t size;
+    size_t count;
     int *arr;
 
     void (*print)(const void *self);
@@ -18,24 +18,30 @@ struct vector_t {
     int (*first)(const void *self);
     int (*last)(const void *self);
     int (*at)(const void *self, int index);
+    int (*insert)(const void *self, int index, int item);
+    int (*remove)(const void *self, int index);
     void (*push)(const void *self, int item);
     void (*pop)(const void *self);
-    int (*insert)(const void *self, int index, int item);
     void (*push_front)(const void *self, int item);
+    void (*pop_front)(const void *self);
+    void (*reverse)(const void *self);
 };
 
 Vector new_vector();
-void print_vector(const void *);
-void destroy(const void *);
-int empty(const void *);
-int full(const void *);
-int first(const void *);
-int last(const void *);
-int at(const void *, int);
-void push(const void *, int);
-void pop(const void *);
-int insert(const void *, int, int);
-void push_front(const void *, int);
+void vector_print(const void *);
+void vector_destroy(const void *);
+int vector_empty(const void *);
+int vector_full(const void *);
+int vector_first(const void *);
+int vector_last(const void *);
+int vector_at(const void *, int);
+int vector_insert(const void *, int, int);
+int vector_remove(const void *, int);
+void vector_push(const void *, int);
+void vector_pop(const void *);
+void vector_push_front(const void *, int);
+void vector_pop_front(const void *);
+void vector_reverse(const void *);
 
 Vector new_vector()
 {
@@ -45,24 +51,27 @@ Vector new_vector()
     self->count = 0;
     self->arr = (int *)malloc(sizeof(int) * self->size);
 
-    self->print = print_vector;
-    self->destroy = destroy;
-    self->empty = empty;
-    self->full = full;
-    self->first = first;
-    self->last = last;
-    self->at = at;
-    self->push = push;
-    self->pop = pop;
-    self->insert = insert;
-    self->push_front = push_front;
+    self->print = vector_print;
+    self->destroy = vector_destroy;
+    self->empty = vector_empty;
+    self->full = vector_full;
+    self->first = vector_first;
+    self->last = vector_last;
+    self->at = vector_at;
+    self->insert = vector_insert;
+    self->remove = vector_remove;
+    self->push = vector_push;
+    self->pop = vector_pop;
+    self->push_front = vector_push_front;
+    self->pop_front = vector_pop_front;
+    self->reverse = vector_reverse;
 
     return self;
 }
 
-void print_vector(const void *this)
+void vector_print(const void *_self)
 {
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
 
     putchar('[');
     for (int i = 0; i < self->count; ++i)
@@ -70,45 +79,45 @@ void print_vector(const void *this)
     printf("]\n");
 }
 
-void destroy(const void *this)
+void vector_destroy(const void *_self)
 {
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
 
     free(self->arr);
     free(self);
 }
 
-int empty(const void *this)
+int vector_empty(const void *_self)
 {
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
 
     return self->count == 0;
 }
 
-int full(const void *this)
+int vector_full(const void *_self)
 {
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
 
     return self->count == self->size;
 }
 
-int first(const void *this)
+int vector_first(const void *_self)
 {
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
 
     return (!self->empty(self)) ? self->arr[0] : INT_MIN;
 }
 
-int last(const void *this)
+int vector_last(const void *_self)
 {
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
 
     return (!self->empty(self)) ? self->arr[self->count-1] : INT_MIN;
 }
 
-int at(const void *this, int index)
+int vector_at(const void *_self, int index)
 {
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
 
     if (index < 0)
         return INT_MIN;
@@ -117,29 +126,9 @@ int at(const void *this, int index)
     return self->arr[index];
 }
 
-void push(const void *this, int item)
+int vector_insert(const void *_self, int index, int item)
 {
-    Vector self = (Vector)this;
-
-    if (self->full(self)) {
-        self->size *= 2;
-        self->arr = (int *)realloc(self->arr, sizeof(int) * self->size);
-    }
-
-    self->arr[self->count++] = item;
-}
-
-void pop(const void *this)
-{
-    Vector self = (Vector)this;
-
-    if (!self->empty(self))
-        self->count -= 1;
-}
-
-int insert(const void *this, int index, int item)
-{
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
 
     if (index < 0)
         return INT_MIN;
@@ -158,10 +147,64 @@ int insert(const void *this, int index, int item)
     return 0;
 }
 
-void push_front(const void *this, int item)
+int vector_remove(const void *_self, int index)
 {
-    Vector self = (Vector)this;
+    Vector self = (Vector)_self;
+
+    if (index < 0)
+        return INT_MIN;
+    else if (index >= self->count)
+        return INT_MAX;
+
+    for (int i = index; i < self->count - 1; ++i)
+        self->arr[i] = self->arr[i+1];
+    --self->count;
+    return 0;
+}
+
+void vector_push(const void *_self, int item)
+{
+    Vector self = (Vector)_self;
+
+    if (self->full(self)) {
+        self->size *= 2;
+        self->arr = (int *)realloc(self->arr, sizeof(int) * self->size);
+    }
+
+    self->arr[self->count++] = item;
+}
+
+void vector_pop(const void *_self)
+{
+    Vector self = (Vector)_self;
+
+    if (!self->empty(self))
+        self->count -= 1;
+}
+
+void vector_push_front(const void *_self, int item)
+{
+    Vector self = (Vector)_self;
 
     self->insert(self, 0, item);
+}
+
+void vector_pop_front(const void *_self)
+{
+    Vector self = (Vector)_self;
+
+    self->remove(self, 0);
+}
+
+void vector_reverse(const void *_self)
+{
+    Vector self = (Vector)_self;
+    int tmp;
+
+    for (int i = 0; i < self->count / 2; ++i) {
+        tmp = self->arr[i];
+        self->arr[i] = self->arr[self->count-1-i];
+        self->arr[self->count-1-i] = tmp;
+    }
 }
 
