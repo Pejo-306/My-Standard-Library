@@ -6,9 +6,11 @@ int getword(char *word, int limit, int (*char_comp)(int))
     char *w = word;
 
     while (isspace(c = getchar()));
+    ungetc(c, stdin);
+    while (!(*char_comp)(c = getchar()) && c != EOF);
     if (c != EOF)
         *w++ = c;
-    if (!(*char_comp)(c) && c != '#') {
+    if (!(*char_comp)(c)) {
         *w = '\0';
         return c;
     }
