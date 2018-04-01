@@ -50,9 +50,9 @@ Stack new_stack()
     return self;
 }
 
-size_t size(const void *this)
+size_t size(const void *_self)
 {
-    Stack self = (Stack)this;
+    Stack self = (Stack)_self;
     Node current = self->head;
     size_t len = 0;
 
@@ -63,9 +63,9 @@ size_t size(const void *this)
     return len;
 }
 
-void print_stack(const void *this)
+void print_stack(const void *_self)
 { 
-    Stack self = (Stack)this;
+    Stack self = (Stack)_self;
     Node current = self->head;
 
     while (current != NULL) {
@@ -75,9 +75,9 @@ void print_stack(const void *this)
     printf("NULL\n");
 }
 
-void destroy(const void *this)
+void destroy(const void *_self)
 {
-    Stack self = (Stack)this;
+    Stack self = (Stack)_self;
     Node previous = NULL;
     Node current = self->head;
 
@@ -89,23 +89,23 @@ void destroy(const void *this)
     free(self);
 }
 
-int empty(const void *this)
+int empty(const void *_self)
 {
-    Stack self = (Stack)this;
+    Stack self = (Stack)_self;
 
     return (self->head == NULL) ? 1 : 0;
 }
 
-int top(const void *this)
+int top(const void *_self)
 {
-    Stack self = (Stack)this;
+    Stack self = (Stack)_self;
 
     return (self->empty(self)) ? INT_MIN : self->head->data;
 }
 
-void push(const void *this, int data)
+void push(const void *_self, int data)
 {
-    Stack self = (Stack)this;
+    Stack self = (Stack)_self;
     Node new_head = (Node)malloc(sizeof(struct node_t));
 
     new_head->data = data;
@@ -113,9 +113,9 @@ void push(const void *this, int data)
     self->head = new_head;
 }
 
-void pop(const void *this)
+void pop(const void *_self)
 {
-    Stack self = (Stack)this;
+    Stack self = (Stack)_self;
     Node old_head;
 
     if (self->empty(self))

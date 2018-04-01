@@ -50,9 +50,9 @@ Queue new_queue()
     return self; 
 }
 
-size_t size(const void *this)
+size_t size(const void *_self)
 {
-    Queue self = (Queue)this;
+    Queue self = (Queue)_self;
     Node current = self->head;
     size_t len = 0;
 
@@ -63,9 +63,9 @@ size_t size(const void *this)
     return len;
 }
 
-void print_queue(const void *this)
+void print_queue(const void *_self)
 {
-    Queue self = (Queue)this;
+    Queue self = (Queue)_self;
     Node current = self->head;
 
     while (current != NULL) {
@@ -75,9 +75,9 @@ void print_queue(const void *this)
     printf("NULL\n");
 }
 
-void destroy(const void *this)
+void destroy(const void *_self)
 {
-    Queue self = (Queue)this;
+    Queue self = (Queue)_self;
     Node previous = NULL;
     Node current = self->head;
 
@@ -89,23 +89,23 @@ void destroy(const void *this)
     free(self);
 }
 
-int empty(const void *this)
+int empty(const void *_self)
 {
-    Queue self = (Queue)this;
+    Queue self = (Queue)_self;
 
     return (self->head == NULL) ? 1 : 0;
 }
 
-int front(const void *this)
+int front(const void *_self)
 {
-    Queue self = (Queue)this;
+    Queue self = (Queue)_self;
 
     return (self->empty(self)) ? INT_MIN : self->head->data;
 }
  
-void push(const void *this, int data)
+void push(const void *_self, int data)
 {
-    Queue self = (Queue)this;
+    Queue self = (Queue)_self;
     Node new_element = (Node)malloc(sizeof(struct node_t));
     new_element->data = data;
     new_element->next = NULL;
@@ -119,9 +119,9 @@ void push(const void *this, int data)
     }
 }
 
-void pop(const void *this)
+void pop(const void *_self)
 {
-    Queue self = (Queue)this;
+    Queue self = (Queue)_self;
     Node old_head;
 
     if (self->empty(self))
